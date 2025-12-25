@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".signIn_singUp.botChatInterface.BotChatActivity">
+
+    <!-- 🎥 FULLSCREEN GIF BACKGROUND (never shrinks) -->
+    <ImageView
+        android:id="@+id/ivGifBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.8"
+        android:scaleType="fitXY" />
+
+    <!-- CHAT UI LAYER (resizes with keyboard) -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Messages RecyclerView - Transparent -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerMessages"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clipToPadding="false"
+            android:padding="5dp"
+            android:background="@android:color/transparent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/inputContainer"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        <!-- Modern Input Container - Transparent background -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/inputContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            app:cardCornerRadius="10dp"
+            app:cardUseCompatPadding="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:id="@+id/inputRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="5dp">
+
+                <!-- Dynamic Input Field -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/inputLayout"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint=""
+                    app:boxStrokeColor="@color/purple_500"
+                    app:boxStrokeWidth="2dp"
+                    app:endIconMode="clear_text"
+                    app:startIconDrawable="@drawable/ic_person">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editMessage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textEmailAddress"
+                        android:text=""
+                        android:maxLines="1" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Send Button -->
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/buttonSend"
+                    android:layout_width="55dp"
+                    android:layout_height="55dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="2dp"
+                    android:contentDescription="send the message."
+                    android:src="@drawable/ic_send"
+                    app:fabSize="mini"
+                    app:tint="@color/purple_700" />
+            </LinearLayout>
+
+            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                android:id="@+id/btnBackHome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Back to home"
+                app:icon="@drawable/ic_home"
+                android:visibility="gone"
+                app:iconSize="50dp"
+                android:textStyle="bold"
+                android:letterSpacing="0.3"
+                android:layout_gravity="center_vertical"
+                android:textSize="20sp"
+                android:textAllCaps="true"
+                android:layout_margin="5dp"
+                android:textColor="@color/dark_bg"
+                android:padding="10dp"
+                android:backgroundTint="@color/purple_900"/>
+
+        </androidx.cardview.widget.CardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>
