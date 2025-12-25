@@ -1,6 +1,7 @@
 package com.example.alone.signIn_singUp.botChatInterface
 
 import android.content.Intent
+import android.graphics.Color
 import com.example.alone.R
 import android.os.Bundle
 import android.text.InputType
@@ -12,9 +13,11 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.alone.GetStartedActivity
 import com.example.alone.MainActivity
 import com.example.alone.beConnection.ApiClient
 import com.example.alone.beConnection.UserApi
@@ -24,6 +27,7 @@ import com.example.alone.model.LoginWithUsernameRequest
 import com.example.alone.model.User
 import com.example.alone.model.UserEmailUsername
 import com.example.alone.signIn_singUp.RegisterActivity
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,12 +56,11 @@ class BotChatActivity : AppCompatActivity() {
 
     private lateinit var rvChat: RecyclerView
     private lateinit var etInput: EditText
-    private lateinit var btnSend: ImageButton
+    private lateinit var btnSend: MaterialButton
     private lateinit var chatAdapter: ChatAdapter
     private lateinit var inputLayout : TextInputLayout
-    private lateinit var ivGifBackground: ImageView
-    private lateinit var btnBackHome: Button
-    private lateinit var inputRow: LinearLayout
+    private lateinit var btnBackHome: MaterialButton
+    private lateinit var inputRow: ConstraintLayout
 
     private val botQueue: MutableList<String> = mutableListOf()
     private var isBotPlaying: Boolean = false
@@ -83,8 +86,6 @@ class BotChatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat_bot)
 
-        loadSingleGifBackground(); // initializing the glider and imageview
-
         etInput = findViewById(R.id.editMessage)
         btnSend = findViewById(R.id.buttonSend)
         rvChat = findViewById(R.id.recyclerMessages)
@@ -99,11 +100,11 @@ class BotChatActivity : AppCompatActivity() {
         rvChat.adapter = chatAdapter
 
         inputRow = findViewById(R.id.inputRow)
-        btnBackHome = findViewById(R.id.btnBackHome)
+        btnBackHome = findViewById(R.id.btnBack)
 
         btnBackHome.setOnClickListener {
             // Go to home (Splash/Main)
-            startActivity(Intent(this, MainActivity::class.java))
+            startActivity(Intent(this, GetStartedActivity::class.java))
             finish()
         }
 
@@ -120,15 +121,6 @@ class BotChatActivity : AppCompatActivity() {
     }
 
 
-    // ✅ SINGLE GIF - No more switching!
-    private fun loadSingleGifBackground() {
-        ivGifBackground = findViewById(R.id.ivGifBackground)
-
-        Glide.with(this)
-            .asGif()
-            .load(R.raw.new_gif)        // fill entire screen area
-            .into(ivGifBackground)
-    }
 
     // ---------- USER INPUT ----------
 
@@ -176,7 +168,8 @@ class BotChatActivity : AppCompatActivity() {
                     return
                 }
                 queueBotMessage("Great! Now enter your password.")
-                inputLayout.hint = "Enter password"
+                etInput.hint = "Enter password"
+                etInput.inputType = InputType.TYPE_NUMBER_VARIATION_PASSWORD
                 loginStep = LoginStep.ASK_PASSWORD
             }
             LoginStep.ASK_PASSWORD -> {
@@ -199,7 +192,8 @@ class BotChatActivity : AppCompatActivity() {
                 tempUsername = input
                 if (!registerActivity.isUsernameValid(tempUsername)) {
                     signupInvalidCount++
-                    checkSignupAttempts()
+                    if(checkSignupAttempts()) return
+
                     queueBotMessage("Username can only contain letters, numbers, and _ (no spaces/special chars)")
                     return
                 }
@@ -207,13 +201,14 @@ class BotChatActivity : AppCompatActivity() {
                 val isAvailable = !checkUserAvailabilityWithApi(username = tempUsername)
                 if (!isAvailable) {
                     signupInvalidCount++
-                    checkSignupAttempts()
+                    if(checkSignupAttempts()) return
+
                     queueBotMessage("Username '$tempUsername' is taken. Choose another.")
                     return
                 }
 
                 queueBotMessage("Nice name, $tempUsername! Now enter your email.")
-                inputLayout.hint = "Enter email"
+                etInput.hint = "Enter email"
                 etInput.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
                 signupStep = SignupStep.ASK_EMAIL
             }
@@ -222,7 +217,8 @@ class BotChatActivity : AppCompatActivity() {
                 tempEmail = input
                 if (!registerActivity.isEmailValid(tempEmail)) {
                     signupInvalidCount++
-                    checkSignupAttempts()
+                    if(checkSignupAttempts()) return
+
                     queueBotMessage("Please enter a valid Gmail address only")
                     return
                 }
@@ -230,13 +226,14 @@ class BotChatActivity : AppCompatActivity() {
                 val isAvailable = !checkUserAvailabilityWithApi(email = tempEmail)
                 if (!isAvailable) {
                     signupInvalidCount++
-                    checkSignupAttempts()
+                    if(checkSignupAttempts()) return
+
                     queueBotMessage("Email '$tempEmail' is already registered. So, You can login by clicking on 'Login'")
                     return
                 }
 
                 queueBotMessage("Great! Now choose a password.")
-                inputLayout.hint = "Enter password"
+                etInput.hint = "Enter password"
                 etInput.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
                 signupStep = SignupStep.ASK_PASSWORD
             }
@@ -245,13 +242,14 @@ class BotChatActivity : AppCompatActivity() {
                 tempPassword = input
                 if (!registerActivity.isPasswordValid(tempPassword)) {
                     signupInvalidCount++
-                    checkSignupAttempts()
+                    if(checkSignupAttempts()) return
+
                     queueBotMessage("Password must be 9+ chars with 1 uppercase, 1 lowercase, 1 number, 1 special char")
                     return
                 }
                 queueBotMessage("Cool. What profile name should others see for you?")
                 etInput.inputType = InputType.TYPE_CLASS_TEXT
-                inputLayout.hint = "Enter profile name"
+                etInput.hint = "Enter profile name"
                 signupStep = SignupStep.ASK_PROFILE_NAME
             }
 
@@ -260,13 +258,14 @@ class BotChatActivity : AppCompatActivity() {
                 tempProfileName = input
                 if (!registerActivity.isProfileNameValid(tempProfileName, tempUsername)) {
                     signupInvalidCount++
-                    checkSignupAttempts()
+                    if(checkSignupAttempts()) return
+
                     queueBotMessage("Profile name must be different from username ($tempUsername)")
                     return
                 }
                 queueBotMessage("Got it! Now enter your age (number).")
                 etInput.inputType = InputType.TYPE_CLASS_NUMBER
-                inputLayout.hint = "Enter age"
+                etInput.hint = "Enter age"
                 signupStep = SignupStep.ASK_AGE
             }
 
@@ -275,7 +274,8 @@ class BotChatActivity : AppCompatActivity() {
                 val ageInt = input.toIntOrNull()
                 if (ageInt == null || !registerActivity.isAgeValid(ageInt)) {
                     signupInvalidCount++
-                    checkSignupAttempts()
+                    if(checkSignupAttempts()) return
+
                     queueBotMessage("Age must be a number greater than 19")
                     signupStep = SignupStep.ASK_AGE
                     return
@@ -284,7 +284,7 @@ class BotChatActivity : AppCompatActivity() {
                 tempAge = ageInt
                 queueBotMessage("Thanks! Finally, enter your gender (e.g. M / F / O).")
                 etInput.inputType = InputType.TYPE_CLASS_TEXT
-                inputLayout.hint = "Enter gender"
+                etInput.hint = "Enter gender"
                 signupStep = SignupStep.ASK_GENDER
             }
 
@@ -293,7 +293,8 @@ class BotChatActivity : AppCompatActivity() {
                 tempGender = input.uppercase().trim()
                 if (!registerActivity.isGenderValid(tempGender)) {
                     signupInvalidCount++
-                    checkSignupAttempts()
+                    if(checkSignupAttempts()) return
+
                     queueBotMessage("Gender must be M, F, or O")
                     return
                 }
@@ -312,9 +313,10 @@ class BotChatActivity : AppCompatActivity() {
         botQueue.clear()
         isBotPlaying = false
 
-        queueBotMessage("Hey Buddie, Welcome Back Again!\nEnter your login credentials to get into the app.")
+        queueBotMessage("Hey Buddy, Welcome Back Again!\nEnter your login credentials to get into the app.")
         queueBotMessage("First, enter your username / email.")
-        inputLayout.hint = "Enter email / username"
+        etInput.hint = "Enter email / username"
+        etInput.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
         loginStep = LoginStep.ASK_EMAIL
     }
 
@@ -324,7 +326,8 @@ class BotChatActivity : AppCompatActivity() {
 
         queueBotMessage("Hey User, welcome! Let's create your account.")
         queueBotMessage("First, enter your desired username.")
-        inputLayout.hint = "Enter username"
+        etInput.hint = "Enter username"
+        etInput.inputType = InputType.TYPE_CLASS_TEXT
         signupStep = SignupStep.ASK_USERNAME
     }
 
@@ -340,11 +343,13 @@ class BotChatActivity : AppCompatActivity() {
             isBotPlaying = false
             isBotTyping = false
             btnSend.isEnabled = true
+            btnSend.setBackgroundColor(Color.parseColor("#4F4AC7"))
             return
         }
         isBotPlaying = true
         isBotTyping = true
         btnSend.isEnabled = false
+        btnSend.setBackgroundColor(Color.GRAY)
 
         val nextText = botQueue.removeAt(0)
 
@@ -355,6 +360,7 @@ class BotChatActivity : AppCompatActivity() {
                 if (botQueue.isEmpty()) {
                     isBotTyping = false
                     btnSend.isEnabled = true
+                    btnSend.setBackgroundColor(Color.parseColor("#4F4AC7"))
                 }
                 playNextBotMessage()
             }
@@ -438,9 +444,8 @@ class BotChatActivity : AppCompatActivity() {
                         queueBotMessage("Forgot password? Tap here to reset.")
                         // stay on password step
                         inputRow.visibility = View.GONE
-                        btnBackHome.visibility = View.VISIBLE
 
-                        loginStep = LoginStep.ASK_PASSWORD
+//                        loginStep = LoginStep.ASK_PASSWORD
                         loginInvalidPasswordCount = 0
                     } else {
                         val msg = ErrorMapper.mapErrorToUserMessage(
@@ -539,6 +544,7 @@ class BotChatActivity : AppCompatActivity() {
                     profileName = tempProfileName
                 )
                 queueBotMessage("❌ $msg")
+
                 queueBotMessage("Let's try again. Enter your desired username.")
                 signupStep = SignupStep.ASK_USERNAME
 
@@ -556,13 +562,16 @@ class BotChatActivity : AppCompatActivity() {
     }
 
 
-    private fun checkSignupAttempts() {
+    private fun checkSignupAttempts():Boolean {
         if (signupInvalidCount >= maxInvalidAttempts) {
             val msg = ErrorMapper.mapErrorToUserMessage(httpStatusCode = 429)
             queueBotMessage("❌ $msg")
             // Optional: reset or lock
+            inputRow.visibility = View.GONE
             signupInvalidCount = 0
+            return true
         }
+        return false
     }
 
 

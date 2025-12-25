@@ -17,7 +17,9 @@
             android:id="@+id/tvMessageUser"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="15dp"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="9dp"
+            android:lineSpacingExtra="2dp"
             android:layout_gravity="center_vertical"
             android:textColor="@android:color/white"
             android:textSize="16sp" />
