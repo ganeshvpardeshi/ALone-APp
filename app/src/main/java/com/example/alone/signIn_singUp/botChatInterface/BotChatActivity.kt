@@ -12,6 +12,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -61,6 +62,7 @@ class BotChatActivity : AppCompatActivity() {
     private lateinit var inputLayout : TextInputLayout
     private lateinit var btnBackHome: MaterialButton
     private lateinit var inputRow: ConstraintLayout
+    private lateinit var tvInputError: TextView
 
     private val botQueue: MutableList<String> = mutableListOf()
     private var isBotPlaying: Boolean = false
@@ -86,6 +88,7 @@ class BotChatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat_bot)
 
+        tvInputError = findViewById(R.id.tvInputError)
         etInput = findViewById(R.id.editMessage)
         btnSend = findViewById(R.id.buttonSend)
         rvChat = findViewById(R.id.recyclerMessages)
@@ -190,11 +193,14 @@ class BotChatActivity : AppCompatActivity() {
         when (signupStep) {
             SignupStep.ASK_USERNAME -> {
                 tempUsername = input
+                tvInputError.visibility = View.GONE
                 if (!registerActivity.isUsernameValid(tempUsername)) {
                     signupInvalidCount++
                     if(checkSignupAttempts()) return
 
-                    queueBotMessage("Username can only contain letters, numbers, and _ (no spaces/special chars)")
+                    tvInputError.visibility = View.VISIBLE
+                    tvInputError.text = " ⚠️ Username can only contain letters, numbers, and _ (no spaces/special chars)"
+//                    queueBotMessage("Username can only contain letters, numbers, and _ (no spaces/special chars)")
                     return
                 }
 
@@ -203,7 +209,9 @@ class BotChatActivity : AppCompatActivity() {
                     signupInvalidCount++
                     if(checkSignupAttempts()) return
 
-                    queueBotMessage("Username '$tempUsername' is taken. Choose another.")
+                    tvInputError.visibility = View.VISIBLE
+                    tvInputError.text = " ⚠️ Username '\$tempUsername' is taken. Choose another."
+//                    queueBotMessage("Username '$tempUsername' is taken. Choose another.")
                     return
                 }
 
@@ -215,11 +223,14 @@ class BotChatActivity : AppCompatActivity() {
 
             SignupStep.ASK_EMAIL -> {
                 tempEmail = input
+                tvInputError.visibility = View.GONE
                 if (!registerActivity.isEmailValid(tempEmail)) {
                     signupInvalidCount++
                     if(checkSignupAttempts()) return
 
-                    queueBotMessage("Please enter a valid Gmail address only")
+                    tvInputError.visibility = View.VISIBLE
+                    tvInputError.text = " ⚠️ Please enter a valid Gmail address only"
+//                    queueBotMessage("Please enter a valid Gmail address only")
                     return
                 }
 
@@ -228,7 +239,9 @@ class BotChatActivity : AppCompatActivity() {
                     signupInvalidCount++
                     if(checkSignupAttempts()) return
 
-                    queueBotMessage("Email '$tempEmail' is already registered. So, You can login by clicking on 'Login'")
+                    tvInputError.visibility = View.VISIBLE
+                    tvInputError.text = " ⚠️ Email '$tempEmail' is already registered. So, You can login by clicking on 'Login'"
+//                    queueBotMessage("Email '$tempEmail' is already registered. So, You can login by clicking on 'Login'")
                     return
                 }
 
@@ -240,11 +253,14 @@ class BotChatActivity : AppCompatActivity() {
 
             SignupStep.ASK_PASSWORD -> {
                 tempPassword = input
+                tvInputError.visibility = View.GONE
                 if (!registerActivity.isPasswordValid(tempPassword)) {
                     signupInvalidCount++
                     if(checkSignupAttempts()) return
 
-                    queueBotMessage("Password must be 9+ chars with 1 uppercase, 1 lowercase, 1 number, 1 special char")
+                    tvInputError.visibility = View.VISIBLE
+                    tvInputError.text = " ⚠️ Password must be 9+ chars with 1 uppercase, 1 lowercase, 1 number, 1 special char"
+//                    queueBotMessage("Password must be 9+ chars with 1 uppercase, 1 lowercase, 1 number, 1 special char")
                     return
                 }
                 queueBotMessage("Cool. What profile name should others see for you?")
@@ -256,11 +272,14 @@ class BotChatActivity : AppCompatActivity() {
             // ✅ PROFILE NAME
             SignupStep.ASK_PROFILE_NAME -> {
                 tempProfileName = input
+                tvInputError.visibility = View.GONE
                 if (!registerActivity.isProfileNameValid(tempProfileName, tempUsername)) {
                     signupInvalidCount++
                     if(checkSignupAttempts()) return
 
-                    queueBotMessage("Profile name must be different from username ($tempUsername)")
+                    tvInputError.visibility = View.VISIBLE
+                    tvInputError.text = " ⚠️ Profile name must be different from username ($tempUsername)"
+//                    queueBotMessage("Profile name must be different from username ($tempUsername)")
                     return
                 }
                 queueBotMessage("Got it! Now enter your age (number).")
@@ -272,11 +291,14 @@ class BotChatActivity : AppCompatActivity() {
             // ✅ AGE
             SignupStep.ASK_AGE -> {
                 val ageInt = input.toIntOrNull()
+                tvInputError.visibility = View.GONE
                 if (ageInt == null || !registerActivity.isAgeValid(ageInt)) {
                     signupInvalidCount++
                     if(checkSignupAttempts()) return
 
-                    queueBotMessage("Age must be a number greater than 19")
+                    tvInputError.visibility = View.VISIBLE
+                    tvInputError.text = " ⚠️ Age must be a number greater than 19"
+//                    queueBotMessage("Age must be a number greater than 19")
                     signupStep = SignupStep.ASK_AGE
                     return
                 }
@@ -291,11 +313,14 @@ class BotChatActivity : AppCompatActivity() {
             // ✅ GENDER
             SignupStep.ASK_GENDER -> {
                 tempGender = input.uppercase().trim()
+                tvInputError.visibility = View.GONE
                 if (!registerActivity.isGenderValid(tempGender)) {
                     signupInvalidCount++
                     if(checkSignupAttempts()) return
 
-                    queueBotMessage("Gender must be M, F, or O")
+                    tvInputError.visibility = View.VISIBLE
+                    tvInputError.text = " ⚠️ Gender must be M, F, or O"
+//                    queueBotMessage("Gender must be M, F, or O")
                     return
                 }
                 signupInvalidCount = 0  // all good, reset counter
