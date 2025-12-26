@@ -64,6 +64,12 @@ class BotChatActivity : AppCompatActivity() {
     private lateinit var inputRow: ConstraintLayout
     private lateinit var tvInputError: TextView
 
+    private lateinit var genderOptionsLayout: LinearLayout
+    private lateinit var btnGenderMale: MaterialButton
+    private lateinit var btnGenderFemale: MaterialButton
+    private lateinit var btnGenderOther: MaterialButton
+    private lateinit var btnGenderPreferNot: MaterialButton
+
     private val botQueue: MutableList<String> = mutableListOf()
     private var isBotPlaying: Boolean = false
     private var isBotTyping: Boolean = false
@@ -102,6 +108,8 @@ class BotChatActivity : AppCompatActivity() {
         chatAdapter = ChatAdapter(mutableListOf())
         rvChat.adapter = chatAdapter
 
+
+        genderOptionsLayout = findViewById(R.id.genderOptionsLayout)
         inputRow = findViewById(R.id.inputRow)
         btnBackHome = findViewById(R.id.btnBack)
 
@@ -110,6 +118,18 @@ class BotChatActivity : AppCompatActivity() {
             startActivity(Intent(this, GetStartedActivity::class.java))
             finish()
         }
+
+//      GENDER LAYOUT INITIALIZATION AND CLICK LISTENER
+        btnGenderMale = findViewById(R.id.btnGenderMale)
+        btnGenderFemale = findViewById(R.id.btnGenderFemale)
+        btnGenderOther = findViewById(R.id.btnGenderOther)
+
+        btnGenderMale.setOnClickListener { onGenderSelected("M")
+            Log.d("BotChat", "Male CLick completed") }
+        btnGenderFemale.setOnClickListener { onGenderSelected("F")
+            Log.d("BotChat", "Female Click completed")}
+        btnGenderOther.setOnClickListener { onGenderSelected("O")
+            Log.d("BotChat", "Other Click completed")}
 
 
         setupInput()
@@ -210,7 +230,7 @@ class BotChatActivity : AppCompatActivity() {
                     if(checkSignupAttempts()) return
 
                     tvInputError.visibility = View.VISIBLE
-                    tvInputError.text = " ⚠️ Username '\$tempUsername' is taken. Choose another."
+                    tvInputError.text = " ⚠️ Username '$tempUsername' is taken. Choose another."
 //                    queueBotMessage("Username '$tempUsername' is taken. Choose another.")
                     return
                 }
@@ -304,28 +324,37 @@ class BotChatActivity : AppCompatActivity() {
                 }
 
                 tempAge = ageInt
+                btnGenderMale.isEnabled = false
+                btnGenderFemale.isEnabled = false
+                btnGenderOther.isEnabled = false
                 queueBotMessage("Thanks! Finally, enter your gender (e.g. M / F / O).")
-                etInput.inputType = InputType.TYPE_CLASS_TEXT
-                etInput.hint = "Enter gender"
+
                 signupStep = SignupStep.ASK_GENDER
+
+                tvInputError.visibility = View.GONE
+                inputRow.visibility = View.GONE
+                genderOptionsLayout.visibility = View.VISIBLE
+
+                rvChat.postDelayed({
+                    btnGenderMale.isEnabled = true
+                    btnGenderFemale.isEnabled = true
+                    btnGenderOther.isEnabled = true
+                }, 3000)
             }
 
             // ✅ GENDER
             SignupStep.ASK_GENDER -> {
-                tempGender = input.uppercase().trim()
-                tvInputError.visibility = View.GONE
-                if (!registerActivity.isGenderValid(tempGender)) {
-                    signupInvalidCount++
-                    if(checkSignupAttempts()) return
 
-                    tvInputError.visibility = View.VISIBLE
-                    tvInputError.text = " ⚠️ Gender must be M, F, or O"
-//                    queueBotMessage("Gender must be M, F, or O")
-                    return
-                }
-                signupInvalidCount = 0  // all good, reset counter
-                signupStep = SignupStep.CONFIRM
-                registerUserWithApi()
+
+                tvInputError.visibility = View.GONE
+                inputRow.visibility = View.GONE
+                // we are now choosing from buttons, not typing
+
+                genderOptionsLayout.visibility = View.VISIBLE
+
+                // do NOT read `input` or call registerUserWithApi() here.
+                // onGenderSelected(...) will handle that when a button is clicked.
+                return
             }
 
             else -> {}
@@ -558,8 +587,12 @@ class BotChatActivity : AppCompatActivity() {
                     ApiClient.userApi.createUser(newUser)
                 }
                 hideTyping()
-                queueBotMessage("Awesome, ${created.username}! Your account is created. You can now log in.")
-                openDashboard()
+                queueBotMessage("Awesome, ${created.username}! Your account is created. Loading your app right away...")
+
+                rvChat.postDelayed({
+                    openDashboard()
+                }, 5520)
+
             } catch (e: HttpException) {
                 hideTyping()
                 val msg = ErrorMapper.mapErrorToUserMessage(
@@ -597,6 +630,27 @@ class BotChatActivity : AppCompatActivity() {
             return true
         }
         return false
+    }
+
+//    handling selection of gender.
+    private fun onGenderSelected(code: String) {
+        tempGender = code
+        genderOptionsLayout.visibility = View.GONE
+        etInput.visibility = View.VISIBLE
+        btnSend.visibility = View.VISIBLE
+
+        // show what user chose as a chat message
+        val label = when (code) {
+            "M" -> "Male"
+            "F" -> "Female"
+            "O" -> "Other"
+            else -> "Prefer not to say"
+        }
+        addUserMessage(label)
+     // continue signup flow
+        signupInvalidCount = 0
+        signupStep = SignupStep.CONFIRM
+        registerUserWithApi()
     }
 
 

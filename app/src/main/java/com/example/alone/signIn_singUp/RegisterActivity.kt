@@ -56,8 +56,9 @@ class RegisterActivity : AppCompatActivity() {
      * Validates age: non-null, greater than 18
      */
     fun isAgeValid(age: Int?): Boolean {
-        return age != null && age > 18
+        return age != null && age in 18..100
     }
+
 
     /**
      * Validates gender: non-null, M/F/O (case-insensitive)
